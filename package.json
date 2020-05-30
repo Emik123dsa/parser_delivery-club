@@ -1,0 +1,13 @@
+{
+  "name": "htdocs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "script": {
+    "prettier": "prettier"
+  },
+  "dependencies": {
+    "@prettier/plugin-php": "^0.14.1",
+    "prettier": "^2.0.5"
+  }
+}
