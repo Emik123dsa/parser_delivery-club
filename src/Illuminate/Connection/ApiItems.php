@@ -16,7 +16,8 @@ class ApiItems extends ApiDelivery
      *
      * @var integer
      */
-    protected static $initial = 1;
+    protected static $initial = 5758;
+    protected static $initial_menu = 545;
     /**
      * Execution of the pdo query
      *
@@ -34,17 +35,37 @@ class ApiItems extends ApiDelivery
             $queryPDO[$item]
                 ->insert("mt_item")
                 ->set([
-                    "merchant_id" => $item + 1,
+                    "merchant_id" => $item + 77,
                     "status" => "publish",
-                    "item_id" => static::$initial++,
+                    "item_id" => ++static::$initial,
                     "item_name" => !empty($value["name"]) ? $value["name"] : " ",
-                    "photo" => !empty($value["images"]["1000"]) ? clearImg($value["images"]["1000"]) : " ",
+                    "photo" => !empty($value["images"]) ? clearImg($value["images"]) : " ",
                     "category" => json_encode([(string) $middleware]),
                     "price" => !empty($value["price"]["value"]) ? json_encode([(string) $value["price"]["value"]]) : " ",
                     "item_description" => !empty($value["description"]) ? $value["description"] : " ",
                     "discount" => !empty($value["discountPrice"]["value"]) ? json_encode([(string) $value["discountPrice"]["value"]]) : " ",
-                    "item_massa" => !empty($value["properties"]["weight"]) ? $value["properties"]["weight"] : " ",
+                    "item_massa" => MassaVolume($value),
                     "item_kolvo" => !empty($value["properties"]["calories"]) ? $value["properties"]["calories"] : " ",
+                ])
+                ->sql(),
+            $queryPDO[$item]->values
+        );
+
+        unset($queryPDO[$item]);
+    }
+    protected function execute_pdo_menu($item, $value, $queryPDO = [])
+    {
+        $queryPDO[$item] = new QueryBuilder();
+
+        $this->pdo->execute(
+            $queryPDO[$item]
+                ->insert("mt_category")
+                ->set([
+                    "merchant_id" => $item + 77,
+                    "status" => "publish",
+                    "cat_id" => ++static::$initial_menu,
+                    "category_name" => isset($value["name"]) ? $value["name"] : "",
+                    "category_description" => isset($value["name"]) ? $value["name"] : "",
                 ])
                 ->sql(),
             $queryPDO[$item]->values
@@ -61,8 +82,10 @@ class ApiItems extends ApiDelivery
     protected function implement_init($vendors)
     {
         $data_primaries = $this->get_vendor_primaries();
-
+       
         $this->clean_preliminary_keys();
+
+        $this->clean_category_keys();
 
         $todos = [];
         $res = [];
@@ -85,7 +108,7 @@ class ApiItems extends ApiDelivery
                 );
 
                 $res[$primary] = $this->execute_init($this->ch[$primary]);
-                
+
                 $ans[$primary] = json_decode($res[$primary], true);
 
                 unset($ans[$primary]["promoActions"]);
@@ -95,15 +118,21 @@ class ApiItems extends ApiDelivery
                 if (array_key_exists(static::category["p"], $ans[$primary]) && array_key_exists(static::category["m"], $ans[$primary])) {
                     foreach ($ans[$primary][static::category["p"]] as $feature => $exact) {
                         foreach ($ans[$primary][static::category["m"]] as $menu => $exact_menu) {
-                            if (array_search($exact["id"]["primary"], $exact_menu["productIds"])) {
-
-                                //$this->execute_pdo($primary, $exact, $menu + $counter + 1);
-
-                                $counter += count($ans[$primary][static::category["m"]]);
+                            if (in_array((string) $exact["id"]["primary"], $exact_menu["productIds"])) {
+                                $this->execute_pdo($primary, $exact, $menu + $counter + 545 + 1);
                             }
                         }
                     }
-                    return;
+                }
+
+                $counter += count($ans[$primary][static::category["m"]]);
+
+                if (array_key_exists(static::category["m"], $ans[$primary])) {
+
+                    foreach ($ans[$primary][static::category["m"]] as $category => $exact_menu_features) {
+                        $this->execute_pdo_menu($primary, $exact_menu_features);
+                    }
+
                 }
 
                 $this->close_init($this->ch[$primary]);
@@ -137,7 +166,11 @@ class ApiItems extends ApiDelivery
 
         return [];
     }
-
+    /**
+     * Undocumented function
+     *
+     * @return void
+     */
     protected function clean_preliminary_keys()
     {
         $query = new QueryBuilder();
@@ -146,5 +179,21 @@ class ApiItems extends ApiDelivery
                 ->delete()
                 ->from("mt_item")
                 ->sql(), $query->values);
+
+    }
+    /**
+     * clean category keys
+     *
+     * @return void
+     */
+    protected function clean_category_keys()
+    {
+        $query = new QueryBuilder();
+
+        return $this->pdo->execute($query
+                ->delete()
+                ->from("mt_category")
+                ->sql(), $query->values);
+
     }
 }

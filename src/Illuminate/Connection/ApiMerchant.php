@@ -50,7 +50,7 @@ class ApiMerchant extends ApiDelivery
      *
      * @var integer
      */
-    protected static $merchantStarter = 0;
+    protected static $merchantStarter = 76;
     /**
      * Iterator
      *

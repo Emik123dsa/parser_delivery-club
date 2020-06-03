@@ -109,8 +109,26 @@ function NameCorrector($str)
     return $str;
 }
 
+function getImgResolution($arr)
+{
+    if (is_array($arr) && count($arr) > 0) {
+        if (!empty($arr["1000"])) {
+            return $arr["1000"];
+        } elseif (!empty($arr["650"])) {
+            return $arr["650"];
+        } elseif (!empty($arr["200"])) {
+            return $arr["200"];
+        } else {
+            return " ";
+        }
+    } else {
+        return $arr;
+    }
+}
 function clearImg($str)
 {
+    $str = getImgResolution($str);
+
     $str = str_replace("/media/cms/relation_product/", "", $str);
 
     $str = str_replace("/", "!", $str);
@@ -120,4 +138,17 @@ function clearImg($str)
     $replacement = '$2';
 
     return preg_replace($pattern, $replacement, $str);
+}
+
+function MassaVolume($value)
+{
+    if (is_array($value) || isset($value)) {
+        if (!empty($value["properties"]["weight"])) {
+            return $value["properties"]["weight"];
+        } elseif (!empty($value["properties"]["volume"])) {
+            return $value["properties"]["volume"];
+        } else {
+            return " ";
+        }
+    }
 }

@@ -94,15 +94,19 @@ abstract class ApiDelivery
         if (!$response) {
             $this->fp_text($this->token);
             trigger_error($response);
-            return;
+            die();
         }
 
         $status = json_decode($response, true);
 
-        if ($status["status"] === 401) {
+        if (isset($status["status"]) && $status["status"] === 401) {
             $this->fp_text($this->token);
-        } else if ($status["status"] === 1108) {
+            echo 'SESSION HAS BEEN EXPIRED';
+            die();
+        } else if (isset($status["status"]) && $status["status"] === 1108) {
             $this->fp_text($this->token);
+            echo 'SESSION HAS BEEN EXPIRED';
+            die();
         }
 
         return $response;

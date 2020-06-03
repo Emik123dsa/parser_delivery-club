@@ -10,7 +10,7 @@ class ApiMenu extends ApiDelivery
     const category = [
         "m" => "menu",
     ];
-    protected static $initial = 0;
+    protected static $initial = 545;
     /**
      * Execution of the pdo query
      *
@@ -21,14 +21,13 @@ class ApiMenu extends ApiDelivery
      */
     protected function execute_pdo($item, $value, $queryPDO = [])
     {
-
         $queryPDO[$item] = new QueryBuilder();
 
         $this->pdo->execute(
             $queryPDO[$item]
                 ->insert("mt_category")
                 ->set([
-                    "merchant_id" => $item + 1,
+                    "merchant_id" => $item + 77,
                     "status" => "publish",
                     "cat_id" => ++static::$initial,
                     "category_name" => isset($value["name"]) ? $value["name"] : "",
@@ -79,13 +78,15 @@ class ApiMenu extends ApiDelivery
                 $res[$primary] = $this->execute_init($this->ch[$primary]);
 
                 $ans[$primary] = json_decode($res[$primary], true);
+             
 
                 if (array_key_exists(static::category["m"], $ans[$primary])) {
                     foreach ($ans[$primary][static::category["m"]] as $category => $exact) {
                         $this->execute_pdo($primary, $exact);
                     }
+                    
                 }
-
+    
                 $this->close_init($this->ch[$primary]);
 
                 unset($todos[$primary]);

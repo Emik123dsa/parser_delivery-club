@@ -6,6 +6,14 @@ use API\Illuminate\Database\QueryBuilder;
 
 class ApiVendor extends ApiDelivery
 {
+    /**
+     * PDO execution essential function
+     *
+     * @param [type] $item
+     * @param [type] $value
+     * @param array $query
+     * @return void
+     */
     protected function execute_pdo($item, $value, $query = [])
     {
         $query[$item] = new QueryBuilder();
@@ -17,7 +25,7 @@ class ApiVendor extends ApiDelivery
                     "contact_name" => isset($value["legalData"]["name"]) ? NameCorrector($value["legalData"]["name"]) : "Vendor",
                     "street" => isset($value["address"]) ? CorrectorStreet($value["address"]) : "vendor-street",
                 ])
-                ->where("merchant_id", $item)
+                ->where("merchant_id", $item + 77)
                 ->sql(),
             $query[$item]->values
         );
